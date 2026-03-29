@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Training Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f2ed;
+  --surface: #ffffff;
+  --surface2: #ede9e2;
+  --ink: #1a1714;
+  --ink2: #5a5550;
+  --ink3: #9a958f;
+  --accent-a: #2d5a27;
+  --accent-b: #c4421a;
+  --accent-c: #1a3a5c;
+  --line: #d8d3cc;
+  --done: #2d5a27;
+  --done-bg: #eef5ed;
+}
+
+- { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+background: var(–bg);
+color: var(–ink);
+font-family: ‘Syne’, sans-serif;
+min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.header {
+background: var(–ink);
+color: var(–bg);
+padding: 32px 40px 28px;
+display: flex;
+align-items: flex-end;
+justify-content: space-between;
+gap: 20px;
+flex-wrap: wrap;
+}
+
+.header-left {}
+
+.header-eyebrow {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 10px;
+letter-spacing: 0.2em;
+text-transform: uppercase;
+color: #8a857f;
+margin-bottom: 8px;
+}
+
+.header-title {
+font-size: clamp(28px, 5vw, 48px);
+font-weight: 800;
+letter-spacing: -0.02em;
+line-height: 1;
+}
+
+.header-title span { color: #b8ff5a; }
+
+.week-nav {
+display: flex;
+align-items: center;
+gap: 12px;
+background: #2a2724;
+padding: 10px 16px;
+border-radius: 8px;
+}
+
+.week-btn {
+background: none;
+border: 1px solid #3a3733;
+color: var(–bg);
+font-family: ‘Syne’, sans-serif;
+font-size: 16px;
+font-weight: 700;
+width: 32px; height: 32px;
+border-radius: 4px;
+cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+transition: all 0.15s;
+}
+
+.week-btn:hover { background: #3a3733; border-color: #b8ff5a; color: #b8ff5a; }
+
+.week-label {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 13px;
+font-weight: 500;
+color: var(–bg);
+min-width: 80px;
+text-align: center;
+}
+
+/* ── TABS ── */
+.tabs {
+display: flex;
+gap: 0;
+padding: 0 40px;
+border-bottom: 1px solid var(–line);
+background: var(–surface);
+}
+
+.tab {
+padding: 16px 28px;
+font-size: 13px;
+font-weight: 700;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+color: var(–ink3);
+cursor: pointer;
+border-bottom: 2px solid transparent;
+margin-bottom: -1px;
+transition: all 0.15s;
+}
+
+.tab:hover { color: var(–ink); }
+.tab.active-a { color: var(–accent-a); border-color: var(–accent-a); }
+.tab.active-b { color: var(–accent-b); border-color: var(–accent-b); }
+.tab.active-progress { color: var(–accent-c); border-color: var(–accent-c); }
+
+/* ── MAIN ── */
+main {
+max-width: 900px;
+margin: 0 auto;
+padding: 40px 24px 80px;
+}
+
+/* ── UNIT HEADER ── */
+.unit-header {
+display: flex;
+align-items: flex-start;
+gap: 20px;
+margin-bottom: 36px;
+}
+
+.unit-badge {
+font-family: ‘Syne’, sans-serif;
+font-size: 64px;
+font-weight: 800;
+letter-spacing: -0.04em;
+line-height: 1;
+flex-shrink: 0;
+}
+
+.badge-a { color: var(–accent-a); }
+.badge-b { color: var(–accent-b); }
+
+.unit-meta {}
+.unit-name {
+font-size: 22px;
+font-weight: 700;
+margin-bottom: 4px;
+}
+.unit-desc {
+font-size: 13px;
+color: var(–ink2);
+font-weight: 400;
+line-height: 1.6;
+max-width: 480px;
+}
+
+/* ── EXERCISE CARD ── */
+.exercise-card {
+background: var(–surface);
+border: 1px solid var(–line);
+border-radius: 12px;
+margin-bottom: 16px;
+overflow: hidden;
+transition: box-shadow 0.15s;
+}
+
+.exercise-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+.exercise-card.completed { border-color: #b8ddb5; background: var(–done-bg); }
+
+.ex-header {
+display: flex;
+align-items: center;
+gap: 16px;
+padding: 16px 20px;
+cursor: pointer;
+user-select: none;
+}
+
+.ex-num {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 11px;
+font-weight: 500;
+color: var(–ink3);
+width: 20px;
+flex-shrink: 0;
+}
+
+.ex-name-wrap { flex: 1; }
+
+.ex-name {
+font-size: 15px;
+font-weight: 700;
+color: var(–ink);
+line-height: 1.2;
+}
+
+.exercise-card.completed .ex-name { color: var(–done); }
+
+.ex-prescription {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 11px;
+color: var(–ink3);
+margin-top: 3px;
+}
+
+.ex-controls {
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.done-btn {
+width: 28px; height: 28px;
+border-radius: 50%;
+border: 2px solid var(–line);
+background: none;
+cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+font-size: 12px;
+transition: all 0.15s;
+flex-shrink: 0;
+}
+
+.done-btn:hover { border-color: var(–done); }
+.done-btn.checked { background: var(–done); border-color: var(–done); color: white; }
+
+.expand-icon {
+font-size: 10px;
+color: var(–ink3);
+transition: transform 0.2s;
+flex-shrink: 0;
+}
+
+.exercise-card.open .expand-icon { transform: rotate(180deg); }
+
+/* ── SETS GRID ── */
+.sets-area {
+display: none;
+padding: 0 20px 20px 56px;
+border-top: 1px solid var(–line);
+}
+
+.exercise-card.open .sets-area { display: block; }
+
+.sets-grid {
+display: grid;
+grid-template-columns: 40px 1fr 1fr 1fr 1fr;
+gap: 6px;
+align-items: center;
+}
+
+.sets-label {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 9px;
+font-weight: 500;
+letter-spacing: 0.15em;
+text-transform: uppercase;
+color: var(–ink3);
+padding: 12px 0 6px;
+}
+
+.set-num {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 12px;
+font-weight: 500;
+color: var(–ink3);
+text-align: center;
+}
+
+.set-input {
+background: var(–bg);
+border: 1px solid var(–line);
+border-radius: 6px;
+padding: 8px 10px;
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 13px;
+font-weight: 400;
+color: var(–ink);
+width: 100%;
+text-align: center;
+outline: none;
+transition: border-color 0.15s;
+}
+
+.set-input:focus { border-color: var(–ink); background: white; }
+.set-input::placeholder { color: var(–ink3); font-size: 11px; }
+
+.set-check {
+width: 24px; height: 24px;
+border-radius: 4px;
+border: 1.5px solid var(–line);
+background: none;
+cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+font-size: 11px;
+transition: all 0.12s;
+margin: 0 auto;
+}
+
+.set-check:hover { border-color: var(–done); }
+.set-check.done { background: var(–done); border-color: var(–done); color: white; }
+
+/* prev week data */
+.prev-hint {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 9px;
+color: var(–ink3);
+margin-top: 10px;
+padding: 8px 12px;
+background: var(–surface2);
+border-radius: 6px;
+display: none;
+}
+
+.prev-hint.visible { display: block; }
+
+.ex-notes-area {
+margin-top: 12px;
+}
+
+.ex-notes {
+width: 100%;
+background: var(–bg);
+border: 1px solid var(–line);
+border-radius: 6px;
+padding: 8px 12px;
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 12px;
+color: var(–ink2);
+resize: none;
+outline: none;
+line-height: 1.5;
+min-height: 48px;
+}
+
+.ex-notes:focus { border-color: var(–ink); background: white; }
+
+/* special card for handstand */
+.handstand-card {
+background: #f0f4ff;
+border-color: #b8cce4;
+}
+
+.handstand-header {
+background: var(–accent-c);
+color: white;
+padding: 10px 20px;
+font-size: 10px;
+font-weight: 700;
+letter-spacing: 0.2em;
+text-transform: uppercase;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.handstand-steps {
+padding: 16px 20px;
+display: grid;
+gap: 10px;
+}
+
+.hs-step {
+display: flex;
+align-items: center;
+gap: 12px;
+}
+
+.hs-step-label {
+font-size: 13px;
+font-weight: 500;
+flex: 1;
+color: var(–ink);
+}
+
+.hs-step-cue {
+font-size: 11px;
+color: var(–ink2);
+font-weight: 400;
+}
+
+.hs-input {
+background: white;
+border: 1px solid var(–line);
+border-radius: 6px;
+padding: 6px 10px;
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 12px;
+color: var(–ink);
+width: 100px;
+text-align: center;
+outline: none;
+}
+
+.hs-input:focus { border-color: var(–accent-c); }
+
+/* ── PROGRESS VIEW ── */
+.progress-view { display: none; }
+.progress-view.active { display: block; }
+
+.prog-section-title {
+font-size: 18px;
+font-weight: 700;
+margin-bottom: 20px;
+padding-bottom: 10px;
+border-bottom: 2px solid var(–ink);
+display: flex;
+align-items: center;
+gap: 12px;
+}
+
+.prog-section-title .dot {
+width: 10px; height: 10px;
+border-radius: 50%;
+background: var(–accent-a);
+flex-shrink: 0;
+}
+
+.prog-section-title .dot-b { background: var(–accent-b); }
+
+.chart-block {
+background: var(–surface);
+border: 1px solid var(–line);
+border-radius: 12px;
+padding: 24px;
+margin-bottom: 20px;
+}
+
+.chart-ex-name {
+font-size: 13px;
+font-weight: 700;
+color: var(–ink2);
+margin-bottom: 16px;
+text-transform: uppercase;
+letter-spacing: 0.1em;
+}
+
+.chart-weeks {
+display: flex;
+align-items: flex-end;
+gap: 8px;
+height: 80px;
+border-bottom: 1px solid var(–line);
+padding-bottom: 8px;
+}
+
+.chart-bar-wrap {
+flex: 1;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: flex-end;
+gap: 4px;
+height: 100%;
+}
+
+.chart-bar {
+width: 100%;
+border-radius: 3px 3px 0 0;
+background: var(–line);
+transition: height 0.3s, background 0.3s;
+min-height: 2px;
+}
+
+.chart-bar.has-data { background: var(–accent-a); }
+.chart-bar.has-data-b { background: var(–accent-b); }
+.chart-bar.current-week { background: #b8ff5a; }
+
+.chart-val {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 9px;
+color: var(–ink3);
+text-align: center;
+}
+
+.chart-wlabel {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 8px;
+color: var(–ink3);
+text-align: center;
+padding-top: 4px;
+}
+
+.chart-week-labels {
+display: flex;
+gap: 8px;
+}
+
+.chart-week-labels > div { flex: 1; text-align: center; }
+
+.empty-chart {
+font-size: 12px;
+color: var(–ink3);
+font-weight: 400;
+padding: 20px 0;
+text-align: center;
+}
+
+/* ── PULLUP SPECIAL ── */
+.pullup-total {
+display: inline-flex;
+align-items: center;
+gap: 8px;
+padding: 6px 14px;
+background: var(–done-bg);
+border: 1px solid #b8ddb5;
+border-radius: 6px;
+margin-left: auto;
+}
+
+.pullup-total-num {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 20px;
+font-weight: 500;
+color: var(–done);
+}
+
+.pullup-total-label {
+font-size: 10px;
+font-weight: 700;
+color: var(–done);
+text-transform: uppercase;
+letter-spacing: 0.1em;
+}
+
+/* ── SAVE BUTTON ── */
+.save-bar {
+position: fixed;
+bottom: 24px;
+left: 50%;
+transform: translateX(-50%);
+z-index: 100;
+display: flex;
+gap: 10px;
+}
+
+.save-btn {
+background: var(–ink);
+color: var(–bg);
+font-family: ‘Syne’, sans-serif;
+font-size: 13px;
+font-weight: 700;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+padding: 14px 32px;
+border: none;
+border-radius: 50px;
+cursor: pointer;
+box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+transition: all 0.15s;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.save-btn:hover { background: var(–accent-a); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,0,0,0.25); }
+.save-btn .check { font-size: 14px; }
+
+.saved-toast {
+background: var(–done);
+color: white;
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 12px;
+padding: 14px 24px;
+border-radius: 50px;
+box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+display: none;
+align-items: center;
+gap: 8px;
+}
+
+.saved-toast.visible { display: flex; }
+
+/* ── UNIT PANELS ── */
+.unit-panel { display: none; }
+.unit-panel.active { display: block; }
+
+@media (max-width: 600px) {
+.header { padding: 24px 20px 20px; }
+.tabs { padding: 0 16px; overflow-x: auto; }
+main { padding: 24px 16px 80px; }
+.sets-area { padding-left: 20px; }
+.sets-grid { grid-template-columns: 32px 1fr 1fr 1fr 1fr; }
+}
+</style>
+
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-eyebrow">Calisthenics & Kraft · Progress Tracker</div>
+    <div class="header-title">TRAINING<br><span>LOG</span></div>
+  </div>
+  <div class="week-nav">
+    <button class="week-btn" onclick="changeWeek(-1)">←</button>
+    <div class="week-label" id="weekLabel">Woche 1</div>
+    <button class="week-btn" onclick="changeWeek(1)">→</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active-a" onclick="switchTab('A')" id="tabA">Einheit A · Zug</div>
+  <div class="tab" onclick="switchTab('B')" id="tabB">Einheit B · Push</div>
+  <div class="tab" onclick="switchTab('progress')" id="tabProgress">📈 Fortschritt</div>
+</div>
+
+<main>
+
+<!-- ══ EINHEIT A ══ -->
+
+<div class="unit-panel active" id="panelA">
+  <div class="unit-header">
+    <div class="unit-badge badge-a">A</div>
+    <div class="unit-meta">
+      <div class="unit-name">Zug + Core Fokus</div>
+      <div class="unit-desc">Klimmzüge als Hauptübung. Ziel: diese Woche mehr Gesamt-Wiederholungen als letzte Woche. Qualität vor Quantität.</div>
+    </div>
+  </div>
+
+  <!-- Klimmzüge SPECIAL -->
+
+  <div class="exercise-card" id="ex-A-0">
+    <div class="ex-header" onclick="toggleEx('A-0')">
+      <div class="ex-num">1</div>
+      <div class="ex-name-wrap">
+        <div class="ex-name">⭐ Klimmzüge <span style="font-size:11px;color:var(--accent-a);font-weight:400">(Hauptübung)</span></div>
+        <div class="ex-prescription">4–5 Sätze · Mehr Gesamt-WDH als letzte Woche</div>
+      </div>
+      <div class="ex-controls">
+        <div id="pullup-counter" class="pullup-total" style="display:none">
+          <span class="pullup-total-num" id="pullup-total-num">0</span>
+          <span class="pullup-total-label">Gesamt</span>
+        </div>
+        <button class="done-btn" id="done-A-0" onclick="toggleDone('A-0', event)">✓</button>
+        <div class="expand-icon">▼</div>
+      </div>
+    </div>
+    <div class="sets-area" id="sets-A-0">
+      <div id="prev-A-0" class="prev-hint"></div>
+      <div class="sets-grid">
+        <div class="sets-label">Satz</div>
+        <div class="sets-label">Gewicht / Var.</div>
+        <div class="sets-label">Wdh.</div>
+        <div class="sets-label">RIR</div>
+        <div class="sets-label">✓</div>
+      </div>
+      <div id="rows-A-0"></div>
+      <div class="ex-notes-area">
+        <textarea class="ex-notes" id="notes-A-0" placeholder="Notizen: z.B. Band verwendet, Form-Cue, Feeling heute …" rows="2"
+          onchange="saveNotes('A-0')"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Latzug -->
+
+  <div class="exercise-card" id="ex-A-1">
+    <div class="ex-header" onclick="toggleEx('A-1')">
+      <div class="ex-num">2</div>
+      <div class="ex-name-wrap">
+        <div class="ex-name">Latzug (breit oder neutral)</div>
+        <div class="ex-prescription">3 × 8–12</div>
+      </div>
+      <div class="ex-controls">
+        <button class="done-btn" id="done-A-1" onclick="toggleDone('A-1', event)">✓</button>
+        <div class="expand-icon">▼</div>
+      </div>
+    </div>
+    <div class="sets-area" id="sets-A-1">
+      <div id="prev-A-1" class="prev-hint"></div>
+      <div class="sets-grid">
+        <div class="sets-label">Satz</div>
+        <div class="sets-label">Gewicht</div>
+        <div class="sets-label">Wdh.</div>
+        <div class="sets-label">RIR</div>
+        <div class="sets-label">✓</div>
+      </div>
+      <div id="rows-A-1"></div>
+      <textarea class="ex-notes" id="notes-A-1" placeholder="Notizen …" rows="2" onchange="saveNotes('A-1')"></textarea>
+    </div>
+  </div>
+
+  <!-- Rudern -->
+
+  <div class="exercise-card" id="ex-A-2">
+    <div class="ex-header" onclick="toggleEx('A-2')">
+      <div class="ex-num">3</div>
+      <div class="ex-name-wrap">
+        <div class="ex-name">Langhantelrudern oder Kabelrudern</div>
+        <div class="ex-prescription">3 × 8–12</div>
+      </div>
+      <div class="ex-controls">
+        <button class="done-btn" id="done-A-2" onclick="toggleDone('A-2', event)">✓</button>
+        <div class="expand-icon">▼</div>
+      </div>
+    </div>
+    <div class="sets-area" id="sets-A-2">
+      <div id="prev-A-2" class="prev-hint"></div>
+      <div class="sets-grid">
+        <div class="sets-label">Satz</div><div class="sets-label">Gewicht</div><div class="sets-label">Wdh.</div><div class="sets-label">RIR</div><div class="sets-label">✓</div>
+      </div>
+      <div id="rows-A-2"></div>
+      <textarea class="ex-notes" id="notes-A-2" placeholder="Notizen …" rows="2" onchange="saveNotes('A-2')"></textarea>
+    </div>
+  </div>
+
+  <!-- Face Pulls -->
+
+  <div class="exercise-card" id="ex-A-3">
+    <div class="ex-header" onclick="toggleEx('A-3')">
+      <div class="ex-num">4</div>
+      <div class="ex-name-wrap">
+        <div class="ex-name">Face Pulls</div>
+        <div class="ex-prescription">3 × 12–15 · Schultergesundheit</div>
+      </div>
+      <div class="ex-controls">
+        <button class="done-btn" id="done-A-3" onclick="toggleDone('A-3', event)">✓</button>
+        <div class="expand-icon">▼</div>
+      </div>
+    </div>
+    <div class="sets-area" id="sets-A-3">
+      <div id="prev-A-3" class="prev-hint"></div>
+      <div class="sets-grid">
+        <div class="sets-label">Satz</div><div class="sets-label">Gewicht</div><div class="sets-label">Wdh.</div><div class="sets-label">RIR</div><div class="sets-label">✓</div>
+      </div>
+      <div id="rows-A-3"></div>
+      <textarea class="ex-notes" id="notes-A-3" placeholder="Notizen …" rows="2" onchange="saveNotes('A-3')"></textarea>
+    </div>
+  </div>
+
+  <!-- Hanging Leg Raises -->
+
+  <div class="exercise-card" id="ex-A-4">
+    <div class="ex-header" onclick="toggleEx('A-4')">
+      <div class="ex-num">5</div>
+      <div class="ex-name-wrap">
+        <div class="ex-name">Hanging Leg Raises / Knieheben</div>
+        <div class="ex-prescription">3 × 10–15</div>
+      </div>
+      <div class="ex-controls">
+        <button class="done-btn" id="done-A-4" onclick="toggleDone('A-4', event)">✓</button>
+        <div class="expand-icon">▼</div>
+      </div>
+    </div>
+    <div class="sets-area" id="sets-A-4">
+      <div id="prev-A-4" class="prev-hint"></div>
+      <div class="sets-grid">
+        <div class="sets-label">Satz</div><div class="sets-label">Var.</div><div class="sets-label">Wdh.</div><div class="sets-label">RIR</div><div class="sets-label">✓</div>
+      </div>
+      <div id="rows-A-4"></div>
+      <textarea class="ex-notes" id="notes-A-4" placeholder="Notizen …" rows="2" onchange="saveNotes('A-4')"></textarea>
+    </div>
+  </div>
+
+  <!-- Plank -->
+
+  <div class="exercise-card" id="ex-A-5">
+    <div class="ex-header" onclick="toggleEx('A-5')">
+      <div class="ex-num">6</div>
+      <div class="ex-name-wrap">
+        <div class="ex-name">Plank</div>
+        <div class="ex-prescription">3 × 30–60 Sekunden</div>
+      </div>
+      <div class="ex-controls">
+        <button class="done-btn" id="done-A-5" onclick="toggleDone('A-5', event)">✓</button>
+        <div class="expand-icon">▼</div>
+      </div>
+    </div>
+    <div class="sets-area" id="sets-A-5">
+      <div id="prev-A-5" class="prev-hint"></div>
+      <div class="sets-grid">
+        <div class="sets-label">Satz</div><div class="sets-label">Var.</div><div class="sets-label">Sek.</div><div class="sets-label">Feeling</div><div class="sets-label">✓</div>
+      </div>
+      <div id="rows-A-5"></div>
+      <textarea class="ex-notes" id="notes-A-5" placeholder="Notizen …" rows="2" onchange="saveNotes('A-5')"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EINHEIT B ══ -->
+
+<div class="unit-panel" id="panelB">
+  <div class="unit-header">
+    <div class="unit-badge badge-b">B</div>
+    <div class="unit-meta">
+      <div class="unit-name">Push + Beine + Handstand</div>
+      <div class="unit-desc">Drücken, Beine für Körper-Balance, und 10–15 Min. dediziertes Handstand-Training am Ende.</div>
+    </div>
+  </div>
+
+  <!-- Bankdrücken -->
+
+  <div class="exercise-card" id="ex-B-0">
+    <div class="ex-header" onclick="toggleEx('B-0')">
+      <div class="ex-num">1</div>
+      <div class="ex-name-wrap">
+        <div class="ex-name">Bankdrücken / Liegestütze (progressiv)</div>
+        <div class="ex-prescription">3 × 6–10</div>
+      </div>
+      <div class="ex-controls">
+        <button class="done-btn" id="done-B-0" onclick="toggleDone('B-0', event)">✓</button>
+        <div class="expand-icon">▼</div>
+      </div>
+    </div>
+    <div class="sets-area" id="sets-B-0">
+      <div id="prev-B-0" class="prev-hint"></div>
+      <div class="sets-grid">
+        <div class="sets-label">Satz</div><div class="sets-label">Gewicht</div><div class="sets-label">Wdh.</div><div class="sets-label">RIR</div><div class="sets-label">✓</div>
+      </div>
+      <div id="rows-B-0"></div>
+      <textarea class="ex-notes" id="notes-B-0" placeholder="Notizen …" rows="2" onchange="saveNotes('B-0')"></textarea>
+    </div>
+  </div>
+
+  <!-- Schulterdrücken -->
+
+  <div class="exercise-card" id="ex-B-1">
+    <div class="ex-header" onclick="toggleEx('B-1')">
+      <div class="ex-num">2</div>
+      <div class="ex-name-wrap">
+        <div class="ex-name">Schulterdrücken (LH oder KH)</div>
+        <div class="ex-prescription">3 × 8–12</div>
+      </div>
+      <div class="ex-controls">
+        <button class="done-btn" id="done-B-1" onclick="toggleDone('B-1', event)">✓</button>
+        <div class="expand-icon">▼</div>
+      </div>
+    </div>
+    <div class="sets-area" id="sets-B-1">
+      <div id="prev-B-1" class="prev-hint"></div>
+      <div class="sets-grid">
+        <div class="sets-label">Satz</div><div class="sets-label">Gewicht</div><div class="sets-label">Wdh.</div><div class="sets-label">RIR</div><div class="sets-label">✓</div>
+      </div>
+      <div id="rows-B-1"></div>
+      <textarea class="ex-notes" id="notes-B-1" placeholder="Notizen …" rows="2" onchange="saveNotes('B-1')"></textarea>
+    </div>
+  </div>
+
+  <!-- Kniebeugen -->
+
+  <div class="exercise-card" id="ex-B-2">
+    <div class="ex-header" onclick="toggleEx('B-2')">
+      <div class="ex-num">3</div>
+      <div class="ex-name-wrap">
+        <div class="ex-name">Kniebeugen / Beinpresse</div>
+        <div class="ex-prescription">3 × 8–12</div>
+      </div>
+      <div class="ex-controls">
+        <button class="done-btn" id="done-B-2" onclick="toggleDone('B-2', event)">✓</button>
+        <div class="expand-icon">▼</div>
+      </div>
+    </div>
+    <div class="sets-area" id="sets-B-2">
+      <div id="prev-B-2" class="prev-hint"></div>
+      <div class="sets-grid">
+        <div class="sets-label">Satz</div><div class="sets-label">Gewicht</div><div class="sets-label">Wdh.</div><div class="sets-label">RIR</div><div class="sets-label">✓</div>
+      </div>
+      <div id="rows-B-2"></div>
+      <textarea class="ex-notes" id="notes-B-2" placeholder="Notizen …" rows="2" onchange="saveNotes('B-2')"></textarea>
+    </div>
+  </div>
+
+  <!-- Dips -->
+
+  <div class="exercise-card" id="ex-B-3">
+    <div class="ex-header" onclick="toggleEx('B-3')">
+      <div class="ex-num">4</div>
+      <div class="ex-name-wrap">
+        <div class="ex-name">Dips (Maschine oder frei)</div>
+        <div class="ex-prescription">3 × 6–10</div>
+      </div>
+      <div class="ex-controls">
+        <button class="done-btn" id="done-B-3" onclick="toggleDone('B-3', event)">✓</button>
+        <div class="expand-icon">▼</div>
+      </div>
+    </div>
+    <div class="sets-area" id="sets-B-3">
+      <div id="prev-B-3" class="prev-hint"></div>
+      <div class="sets-grid">
+        <div class="sets-label">Satz</div><div class="sets-label">Gewicht/Var.</div><div class="sets-label">Wdh.</div><div class="sets-label">RIR</div><div class="sets-label">✓</div>
+      </div>
+      <div id="rows-B-3"></div>
+      <textarea class="ex-notes" id="notes-B-3" placeholder="Notizen …" rows="2" onchange="saveNotes('B-3')"></textarea>
+    </div>
+  </div>
+
+  <!-- Seitheben -->
+
+  <div class="exercise-card" id="ex-B-4">
+    <div class="ex-header" onclick="toggleEx('B-4')">
+      <div class="ex-num">5</div>
+      <div class="ex-name-wrap">
+        <div class="ex-name">Seitheben</div>
+        <div class="ex-prescription">3 × 12–15</div>
+      </div>
+      <div class="ex-controls">
+        <button class="done-btn" id="done-B-4" onclick="toggleDone('B-4', event)">✓</button>
+        <div class="expand-icon">▼</div>
+      </div>
+    </div>
+    <div class="sets-area" id="sets-B-4">
+      <div id="prev-B-4" class="prev-hint"></div>
+      <div class="sets-grid">
+        <div class="sets-label">Satz</div><div class="sets-label">Gewicht</div><div class="sets-label">Wdh.</div><div class="sets-label">RIR</div><div class="sets-label">✓</div>
+      </div>
+      <div id="rows-B-4"></div>
+      <textarea class="ex-notes" id="notes-B-4" placeholder="Notizen …" rows="2" onchange="saveNotes('B-4')"></textarea>
+    </div>
+  </div>
+
+  <!-- HANDSTAND -->
+
+  <div class="exercise-card handstand-card" id="ex-B-5">
+    <div class="handstand-header">
+      🤸 Handstand-Training · 10–15 Minuten
+    </div>
+    <div class="ex-header" onclick="toggleEx('B-5')" style="border-top:none">
+      <div class="ex-num">6</div>
+      <div class="ex-name-wrap">
+        <div class="ex-name" style="color:var(--accent-c)">Handstand-Progression</div>
+        <div class="ex-prescription">3–5 Versuche · von Wand lösen · Schulter aktiv drücken</div>
+      </div>
+      <div class="ex-controls">
+        <button class="done-btn" id="done-B-5" onclick="toggleDone('B-5', event)" style="border-color:var(--accent-c)">✓</button>
+        <div class="expand-icon">▼</div>
+      </div>
+    </div>
+    <div class="sets-area" id="sets-B-5" style="background:rgba(26,58,92,0.04); border-top:1px solid #b8cce4">
+      <div id="prev-B-5" class="prev-hint"></div>
+      <div class="handstand-steps">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent-c);margin-bottom:4px">Protokoll</div>
+        <div class="hs-step">
+          <div class="ex-num">1</div>
+          <div class="hs-step-label">Wall Handstand Hold<span class="hs-step-cue"> · Schultern aktiv drücken, Körper gerade</span></div>
+          <input class="hs-input" id="hs-hold" placeholder="Sek. gehalten" oninput="saveHsData()">
+        </div>
+        <div class="hs-step">
+          <div class="ex-num">2</div>
+          <div class="hs-step-label">Versuche gesamt<span class="hs-step-cue"> · Von Wand lösen, kurze Balance-Momente</span></div>
+          <input class="hs-input" id="hs-tries" placeholder="Anzahl" oninput="saveHsData()">
+        </div>
+        <div class="hs-step">
+          <div class="ex-num">3</div>
+          <div class="hs-step-label">Bester freier Hold<span class="hs-step-cue"> · Längster frei balancierter Moment</span></div>
+          <input class="hs-input" id="hs-best" placeholder="Sek." oninput="saveHsData()">
+        </div>
+        <div style="margin-top:8px">
+          <textarea class="ex-notes" id="notes-B-5" placeholder="Notizen Handstand: z.B. Form, Balance-Feeling, was hat geholfen …" rows="2" onchange="saveNotes('B-5')"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROGRESS VIEW ══ -->
+
+<div class="unit-panel progress-view" id="panelProgress">
+  <div class="prog-section-title"><span class="dot"></span> Klimmzüge – Gesamt-WDH pro Woche</div>
+  <div class="chart-block">
+    <div id="chart-pullups"></div>
+  </div>
+
+  <div class="prog-section-title" style="margin-top:32px"><span class="dot"></span> Latzug – Bestes Gewicht</div>
+  <div class="chart-block">
+    <div id="chart-lat"></div>
+  </div>
+
+  <div class="prog-section-title" style="margin-top:32px"><span class="dot dot-b"></span> Bankdrücken – Bestes Gewicht</div>
+  <div class="chart-block">
+    <div id="chart-bench"></div>
+  </div>
+
+  <div class="prog-section-title" style="margin-top:32px"><span class="dot" style="background:var(--accent-c)"></span> Handstand – Bester freier Hold (Sek.)</div>
+  <div class="chart-block">
+    <div id="chart-hs"></div>
+  </div>
+</div>
+
+</main>
+
+<!-- SAVE BAR -->
+
+<div class="save-bar">
+  <button class="save-btn" onclick="saveAll()">
+    <span class="check">💾</span> Einheit speichern
+  </button>
+  <div class="saved-toast" id="savedToast">✓ Gespeichert!</div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let currentWeek = 1;
+let currentTab = 'A';
+
+// Exercise config: [unit, index, numSets]
+const EXERCISES = {
+  'A-0': { unit:'A', sets: 5, name: 'Klimmzüge' },
+  'A-1': { unit:'A', sets: 3, name: 'Latzug' },
+  'A-2': { unit:'A', sets: 3, name: 'LH/Kabelrudern' },
+  'A-3': { unit:'A', sets: 3, name: 'Face Pulls' },
+  'A-4': { unit:'A', sets: 3, name: 'Hanging Leg Raises' },
+  'A-5': { unit:'A', sets: 3, name: 'Plank' },
+  'B-0': { unit:'B', sets: 3, name: 'Bankdrücken' },
+  'B-1': { unit:'B', sets: 3, name: 'Schulterdrücken' },
+  'B-2': { unit:'B', sets: 3, name: 'Kniebeugen' },
+  'B-3': { unit:'B', sets: 3, name: 'Dips' },
+  'B-4': { unit:'B', sets: 3, name: 'Seitheben' },
+  'B-5': { unit:'B', sets: 0, name: 'Handstand' },
+};
+
+function storageKey(week, exId, type) {
+  return `tp_w${week}_${exId}_${type}`;
+}
+
+function getData(week, exId, type) {
+  try { return JSON.parse(localStorage.getItem(storageKey(week, exId, type))); }
+  catch { return null; }
+}
+
+function setData(week, exId, type, val) {
+  try { localStorage.setItem(storageKey(week, exId, type), JSON.stringify(val)); }
+  catch { /* fallback to memory */ }
+}
+
+// fallback memory store if localStorage unavailable
+const memStore = {};
+function getDataSafe(week, exId, type) {
+  const k = storageKey(week, exId, type);
+  try {
+    const v = localStorage.getItem(k);
+    return v !== null ? JSON.parse(v) : (memStore[k] ?? null);
+  } catch { return memStore[k] ?? null; }
+}
+
+function setDataSafe(week, exId, type, val) {
+  const k = storageKey(week, exId, type);
+  memStore[k] = val;
+  try { localStorage.setItem(k, JSON.stringify(val)); } catch {}
+}
+
+// ══════════════════════════════════════
+// BUILD SET ROWS
+// ══════════════════════════════════════
+function buildSetRows(exId) {
+  const cfg = EXERCISES[exId];
+  if (!cfg || cfg.sets === 0) return;
+  const container = document.getElementById('rows-' + exId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  for (let s = 1; s <= cfg.sets; s++) {
+    const saved = getDataSafe(currentWeek, exId, 'set' + s) || {};
+    const row = document.createElement('div');
+    row.className = 'sets-grid';
+    row.style.marginTop = '4px';
+
+    const checkDone = saved.done ? 'done' : '';
+    const checkChar = saved.done ? '✓' : '';
+
+    row.innerHTML = `
+      <div class="set-num">${s}</div>
+      <input class="set-input" placeholder="kg / Var." value="${saved.weight || ''}"
+        onchange="saveSet('${exId}', ${s}, 'weight', this.value)" />
+      <input class="set-input" placeholder="Wdh." value="${saved.reps || ''}"
+        onchange="saveSet('${exId}', ${s}, 'reps', this.value)" oninput="onRepsInput('${exId}')"/>
+      <input class="set-input" placeholder="RIR" value="${saved.rir || ''}"
+        onchange="saveSet('${exId}', ${s}, 'rir', this.value)" />
+      <button class="set-check ${checkDone}" id="sc-${exId}-${s}" onclick="toggleSetCheck('${exId}', ${s})">${checkChar}</button>
+    `;
+    container.appendChild(row);
+  }
+
+  // notes
+  const noteEl = document.getElementById('notes-' + exId);
+  if (noteEl) noteEl.value = getDataSafe(currentWeek, exId, 'notes') || '';
+
+  // done state
+  const isDone = getDataSafe(currentWeek, exId, 'done') === true;
+  const card = document.getElementById('ex-' + exId);
+  const btn = document.getElementById('done-' + exId);
+  if (card) card.classList.toggle('completed', isDone);
+  if (btn) btn.classList.toggle('checked', isDone);
+
+  // prev week hint
+  const prevEl = document.getElementById('prev-' + exId);
+  if (prevEl && currentWeek > 1) {
+    let prevText = '';
+    for (let s = 1; s <= cfg.sets; s++) {
+      const p = getDataSafe(currentWeek - 1, exId, 'set' + s) || {};
+      if (p.weight || p.reps) {
+        prevText += `Satz ${s}: ${p.weight || '—'}kg × ${p.reps || '—'} WDH  `;
+      }
+    }
+    if (prevText) {
+      prevEl.textContent = '📋 Letzte Woche: ' + prevText.trim();
+      prevEl.classList.add('visible');
+    } else {
+      prevEl.classList.remove('visible');
+    }
+  } else if (prevEl) {
+    prevEl.classList.remove('visible');
+  }
+
+  updatePullupTotal(exId);
+}
+
+function saveSet(exId, setNum, field, value) {
+  const saved = getDataSafe(currentWeek, exId, 'set' + setNum) || {};
+  saved[field] = value;
+  setDataSafe(currentWeek, exId, 'set' + setNum, saved);
+  updatePullupTotal(exId);
+}
+
+function toggleSetCheck(exId, setNum) {
+  const saved = getDataSafe(currentWeek, exId, 'set' + setNum) || {};
+  saved.done = !saved.done;
+  setDataSafe(currentWeek, exId, 'set' + setNum, saved);
+  const btn = document.getElementById('sc-' + exId + '-' + setNum);
+  if (btn) {
+    btn.classList.toggle('done', saved.done);
+    btn.textContent = saved.done ? '✓' : '';
+  }
+}
+
+function onRepsInput(exId) {
+  updatePullupTotal(exId);
+}
+
+function updatePullupTotal(exId) {
+  if (exId !== 'A-0') return;
+  const counter = document.getElementById('pullup-counter');
+  const totalEl = document.getElementById('pullup-total-num');
+  if (!counter || !totalEl) return;
+
+  let total = 0;
+  const cfg = EXERCISES[exId];
+  for (let s = 1; s <= cfg.sets; s++) {
+    const inp = document.querySelector(`#rows-${exId} .sets-grid:nth-child(${s}) input:nth-child(3)`);
+    const val = inp ? parseInt(inp.value) : 0;
+    if (!isNaN(val)) total += val;
+  }
+
+  if (total > 0) {
+    counter.style.display = 'inline-flex';
+    totalEl.textContent = total;
+
+    // Compare to last week
+    let lastTotal = 0;
+    if (currentWeek > 1) {
+      for (let s = 1; s <= cfg.sets; s++) {
+        const p = getDataSafe(currentWeek - 1, exId, 'set' + s) || {};
+        lastTotal += parseInt(p.reps) || 0;
+      }
+      if (lastTotal > 0) {
+        const diff = total - lastTotal;
+        const arrow = diff > 0 ? ' ▲' : diff < 0 ? ' ▼' : ' =';
+        totalEl.textContent = total + arrow + (diff !== 0 ? Math.abs(diff) : '');
+      }
+    }
+  } else {
+    counter.style.display = 'none';
+  }
+}
+
+function saveNotes(exId) {
+  const el = document.getElementById('notes-' + exId);
+  if (el) setDataSafe(currentWeek, exId, 'notes', el.value);
+}
+
+function saveHsData() {
+  const hold = document.getElementById('hs-hold')?.value || '';
+  const tries = document.getElementById('hs-tries')?.value || '';
+  const best = document.getElementById('hs-best')?.value || '';
+  setDataSafe(currentWeek, 'B-5', 'hs', { hold, tries, best });
+}
+
+function loadHsData() {
+  const d = getDataSafe(currentWeek, 'B-5', 'hs') || {};
+  const holdEl = document.getElementById('hs-hold');
+  const triesEl = document.getElementById('hs-tries');
+  const bestEl = document.getElementById('hs-best');
+  if (holdEl) holdEl.value = d.hold || '';
+  if (triesEl) triesEl.value = d.tries || '';
+  if (bestEl) bestEl.value = d.best || '';
+
+  const noteEl = document.getElementById('notes-B-5');
+  if (noteEl) noteEl.value = getDataSafe(currentWeek, 'B-5', 'notes') || '';
+
+  const isDone = getDataSafe(currentWeek, 'B-5', 'done') === true;
+  const card = document.getElementById('ex-B-5');
+  const btn = document.getElementById('done-B-5');
+  if (card) card.classList.toggle('completed', isDone);
+  if (btn) btn.classList.toggle('checked', isDone);
+}
+
+// ══════════════════════════════════════
+// TOGGLE / NAV
+// ══════════════════════════════════════
+function toggleEx(exId) {
+  const card = document.getElementById('ex-' + exId);
+  if (!card) return;
+  const isOpen = card.classList.contains('open');
+  // close all in current unit
+  const unit = EXERCISES[exId]?.unit || (exId === 'B-5' ? 'B' : 'A');
+  document.querySelectorAll(`.exercise-card`).forEach(c => c.classList.remove('open'));
+  if (!isOpen) {
+    card.classList.add('open');
+    buildSetRows(exId);
+    if (exId === 'B-5') loadHsData();
+  }
+}
+
+function toggleDone(exId, e) {
+  e.stopPropagation();
+  const isDone = getDataSafe(currentWeek, exId, 'done') === true;
+  setDataSafe(currentWeek, exId, 'done', !isDone);
+  const card = document.getElementById('ex-' + exId);
+  const btn = document.getElementById('done-' + exId);
+  if (card) card.classList.toggle('completed', !isDone);
+  if (btn) btn.classList.toggle('checked', !isDone);
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  ['A','B','progress'].forEach(t => {
+    document.getElementById('tab' + (t === 'progress' ? 'Progress' : t))?.classList.remove('active-a','active-b','active-progress');
+    document.getElementById('panel' + (t === 'progress' ? 'Progress' : t))?.classList.remove('active');
+  });
+  const panelId = tab === 'progress' ? 'panelProgress' : 'panel' + tab;
+  const tabId = tab === 'progress' ? 'tabProgress' : 'tab' + tab;
+  document.getElementById(panelId)?.classList.add('active');
+  document.getElementById(tabId)?.classList.add(tab === 'A' ? 'active-a' : tab === 'B' ? 'active-b' : 'active-progress');
+
+  if (tab === 'progress') renderProgress();
+}
+
+function changeWeek(delta) {
+  const newWeek = currentWeek + delta;
+  if (newWeek < 1 || newWeek > 20) return;
+  currentWeek = newWeek;
+  document.getElementById('weekLabel').textContent = 'Woche ' + currentWeek;
+  // close all open cards
+  document.querySelectorAll('.exercise-card').forEach(c => c.classList.remove('open'));
+}
+
+// ══════════════════════════════════════
+// SAVE ALL (currently open)
+// ══════════════════════════════════════
+function saveAll() {
+  // Trigger saves for all open inputs
+  document.querySelectorAll('.set-input').forEach(inp => {
+    inp.dispatchEvent(new Event('change'));
+  });
+  document.querySelectorAll('.ex-notes').forEach(t => {
+    t.dispatchEvent(new Event('change'));
+  });
+  saveHsData();
+
+  // Toast
+  const toast = document.getElementById('savedToast');
+  toast.classList.add('visible');
+  setTimeout(() => toast.classList.remove('visible'), 2200);
+}
+
+// ══════════════════════════════════════
+// PROGRESS CHARTS
+// ══════════════════════════════════════
+function renderProgress() {
+  renderLineChart('chart-pullups', 'A-0', (w) => {
+    let total = 0;
+    for (let s = 1; s <= 5; s++) {
+      const d = getDataSafe(w, 'A-0', 'set' + s) || {};
+      total += parseInt(d.reps) || 0;
+    }
+    return total || null;
+  }, 'Gesamt WDH', 'has-data');
+
+  renderLineChart('chart-lat', 'A-1', (w) => {
+    let best = 0;
+    for (let s = 1; s <= 3; s++) {
+      const d = getDataSafe(w, 'A-1', 'set' + s) || {};
+      const kg = parseFloat(d.weight) || 0;
+      if (kg > best) best = kg;
+    }
+    return best || null;
+  }, 'kg', 'has-data');
+
+  renderLineChart('chart-bench', 'B-0', (w) => {
+    let best = 0;
+    for (let s = 1; s <= 3; s++) {
+      const d = getDataSafe(w, 'B-0', 'set' + s) || {};
+      const kg = parseFloat(d.weight) || 0;
+      if (kg > best) best = kg;
+    }
+    return best || null;
+  }, 'kg', 'has-data-b');
+
+  renderLineChart('chart-hs', 'B-5', (w) => {
+    const d = getDataSafe(w, 'B-5', 'hs') || {};
+    return parseFloat(d.best) || null;
+  }, 'Sek.', 'has-data');
+}
+
+function renderLineChart(containerId, exId, valFn, unit, barClass) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const weeks = 12;
+  const values = [];
+  for (let w = 1; w <= weeks; w++) {
+    values.push({ w, v: valFn(w) });
+  }
+
+  const hasAny = values.some(d => d.v !== null);
+  if (!hasAny) {
+    container.innerHTML = '<div class="empty-chart">Noch keine Daten. Trage Werte ein, um deinen Fortschritt zu sehen.</div>';
+    return;
+  }
+
+  const max = Math.max(...values.filter(d => d.v).map(d => d.v));
+  let html = '<div class="chart-weeks">';
+  values.forEach(({ w, v }) => {
+    const pct = v ? Math.max(8, Math.round((v / max) * 100)) : 4;
+    const isCurrent = w === currentWeek;
+    const cls = isCurrent ? 'current-week' : (v ? barClass : '');
+    html += `
+      <div class="chart-bar-wrap">
+        <div class="chart-val">${v !== null ? v + unit : ''}</div>
+        <div class="chart-bar ${cls}" style="height:${pct}%"></div>
+      </div>`;
+  });
+  html += '</div><div class="chart-week-labels">';
+  values.forEach(({ w }) => {
+    html += `<div class="chart-wlabel">W${w}</div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('weekLabel').textContent = 'Woche ' + currentWeek;
+});
+</script>
+
+</body>
+</html>
