@@ -302,23 +302,23 @@ function emptyDay(dayKey){
 }
 function ensureWeek(n){
   if(!DATA.weeks[n]){
-    const prev = DATA.weeks[n-1];
     const week = { A: emptyDay("A"), B: emptyDay("B"), C: emptyDay("C") };
-    // Notizen-Übertrag aus der Vorwoche
-    if(prev){
-      ["A","B","C"].forEach(dayKey=>{
-        PLAN[dayKey].exercises.forEach(ex=>{
-          if(prev[dayKey] && prev[dayKey][ex.id] && prev[dayKey][ex.id].notes){
-            week[dayKey][ex.id].notes = prev[dayKey][ex.id].notes;
-            week[dayKey][ex.id].carried = true;
-          }
-        });
-      });
-    }
     DATA.weeks[n] = week;
     if(n > DATA.currentWeek) DATA.currentWeek = n;
   }
   return DATA.weeks[n];
+}
+
+// Findet die aktuellste eigene Notiz für eine Übung: eigene Woche zuerst,
+// sonst rückwärts durch die Wochen bis eine gefunden wird.
+function getEffectiveNote(dayKey, exId, week){
+  for(let w = week; w >= 1; w--){
+    const wk = DATA.weeks[w];
+    if(wk && wk[dayKey] && wk[dayKey][exId] && wk[dayKey][exId].notes){
+      return { text: wk[dayKey][exId].notes, own: (w === week) };
+    }
+  }
+  return { text:"", own:true };
 }
 
 async function loadData(){
@@ -370,6 +370,8 @@ function renderDay(dayKey){
   const container = document.getElementById("day"+dayKey);
   const plan = PLAN[dayKey];
   const weekData = ensureWeek(activeWeek)[dayKey];
+  const prevWeek = DATA.weeks[activeWeek-1];
+  const prevDayData = prevWeek ? prevWeek[dayKey] : null;
   let html = "";
   html += `<p class="day-note"><strong>${dayKey}</strong> · ${plan.label}${plan.optional?'<span class="optional-tag">optional</span>':''}<br>${plan.note}</p>`;
 
@@ -382,31 +384,40 @@ function renderDay(dayKey){
           <h3>${ex.main?'<span class="star">⭐</span>':''}${idx+1}. ${ex.name}</h3>
           <div class="target">${ex.target}</div>
         </div>
-      </div>`;
+      </div>
+      ${prevDayData && prevDayData[ex.id] && prevDayData[ex.id].sets.some(s=>s.v1||s.v2) ? '<span class="carry-hint">Werte der Vorwoche stehen als Platzhalter in den leeren Feldern</span>' : ''}`;
+
+    const prevExData = prevDayData ? prevDayData[ex.id] : null;
 
     if(isHandstand){
       html += `<div class="handstand-block">🤸 10–15 Minuten dediziertes Handstand-Training</div>`;
       html += `<table class="sets"><tr><th>Protokoll</th><th>Wert</th></tr>`;
       ex.setLabels.forEach((label, sIdx)=>{
         const s = exData.sets[sIdx] || {v1:"",v2:""};
-        html += `<tr><td>${label}</td><td><input type="text" data-day="${dayKey}" data-ex="${ex.id}" data-set="${sIdx}" data-field="v2" value="${s.v2||""}"></td></tr>`;
+        const prevS = prevExData ? prevExData.sets[sIdx] : null;
+        const ph = (prevS && prevS.v2) ? `Vorwoche: ${prevS.v2}` : "";
+        html += `<tr><td>${label}</td><td><input type="text" placeholder="${ph}" data-day="${dayKey}" data-ex="${ex.id}" data-set="${sIdx}" data-field="v2" value="${s.v2||""}"></td></tr>`;
       });
       html += `</table>`;
     } else {
       html += `<table class="sets"><tr><th>Satz</th><th>${ex.cols[0]}</th><th>${ex.cols[1]}</th></tr>`;
       exData.sets.forEach((s, sIdx)=>{
+        const prevS = prevExData ? prevExData.sets[sIdx] : null;
+        const ph1 = (prevS && prevS.v1) ? `Vorwoche: ${prevS.v1}` : "";
+        const ph2 = (prevS && prevS.v2) ? `Vorwoche: ${prevS.v2}` : "";
         html += `<tr>
           <td>${sIdx+1}</td>
-          <td><input type="text" inputmode="decimal" data-day="${dayKey}" data-ex="${ex.id}" data-set="${sIdx}" data-field="v1" value="${s.v1||""}"></td>
-          <td><input type="text" inputmode="numeric" data-day="${dayKey}" data-ex="${ex.id}" data-set="${sIdx}" data-field="v2" value="${s.v2||""}"></td>
+          <td><input type="text" inputmode="decimal" placeholder="${ph1}" data-day="${dayKey}" data-ex="${ex.id}" data-set="${sIdx}" data-field="v1" value="${s.v1||""}"></td>
+          <td><input type="text" inputmode="numeric" placeholder="${ph2}" data-day="${dayKey}" data-ex="${ex.id}" data-set="${sIdx}" data-field="v2" value="${s.v2||""}"></td>
         </tr>`;
       });
       html += `</table>`;
     }
 
+    const effectiveNote = getEffectiveNote(dayKey, ex.id, activeWeek);
     html += `<span class="notes-label">Notiz</span>
-      <textarea class="notes" data-day="${dayKey}" data-ex="${ex.id}" placeholder="z.B. Griffweite, Gefühl, nächstes Mal steigern...">${exData.notes||""}</textarea>`;
-    if(exData.carried){
+      <textarea class="notes" data-day="${dayKey}" data-ex="${ex.id}" placeholder="z.B. Griffweite, Gefühl, nächstes Mal steigern...">${effectiveNote.text}</textarea>`;
+    if(!effectiveNote.own && effectiveNote.text){
       html += `<span class="carry-hint">↩ aus Vorwoche übernommen</span>`;
     }
     html += `</div>`;
@@ -440,7 +451,6 @@ function onNoteChange(e){
   const { day, ex } = e.target.dataset;
   const weekData = ensureWeek(activeWeek)[day];
   weekData[ex].notes = e.target.value;
-  weekData[ex].carried = false;
   scheduleSave();
 }
 
